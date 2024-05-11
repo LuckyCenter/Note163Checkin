@@ -53,10 +53,6 @@ for (int i = 0; i < _conf.Users.Length; i++)
             }
         }
 
-        if (isRedis)
-        {
-            Console.WriteLine($"redis更新cookie:{await db.StringSetAsync(redisKey, cookie)}");
-        }
     }
 
     #endregion
