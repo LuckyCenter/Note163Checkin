@@ -178,7 +178,7 @@ async Task Notify(string msg, bool isFailed = false)
     Console.WriteLine(msg);
     if (_conf.ScType == "Always" || (isFailed && _conf.ScType == "Failed"))
     {
-        await _scClient.GetAsync($"https://sc.ftqq.com/{_conf.ScKey}.send?text={msg}");
+        await _scClient.GetAsync($"https://wxpusher.zjiecode.com/api/send/message/?appToken=AT_tOeRjm5Dsld5jzZ8zaw6apciH9DT1Q9b&content={msg}&uid={_conf.ScKey}&url=http%3a%2f%2fwxpusher.zjiecode.com");
     }
 }
 
