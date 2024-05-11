@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 using PuppeteerSharp;
 using StackExchange.Redis;
 using System.Text.Json;
@@ -10,8 +10,9 @@ HttpClient _scClient = new();
 
 #region redis
 
-
-bool isRedis = false;
+ConnectionMultiplexer redis = ConnectionMultiplexer.Connect($"{_conf.RdsServer},password={_conf.RdsPwd},name=Note163Checkin,defaultDatabase=0,allowadmin=true,abortConnect=false");
+IDatabase db = redis.GetDatabase();
+bool isRedis = db.IsConnected("test");
 Console.WriteLine("redis:{0}", isRedis ? "有效" : "无效");
 
 #endregion
@@ -39,7 +40,16 @@ for (int i = 0; i < _conf.Users.Length; i++)
     if (isInvalid)
     {
         string redisKey = $"Note163_{user.Username}";
- 
+        if (isRedis)
+        {
+            var redisValue = await db.StringGetAsync(redisKey);
+            if (redisValue.HasValue)
+            {
+                cookie = redisValue.ToString();
+                (isInvalid, result) = await IsInvalid(cookie);
+                Console.WriteLine("redis获取cookie,状态:{0}", isInvalid ? "无效" : "有效");
+            }
+        }
 
         if (isInvalid)
         {
@@ -53,6 +63,10 @@ for (int i = 0; i < _conf.Users.Length; i++)
             }
         }
 
+        if (isRedis)
+        {
+            Console.WriteLine($"redis更新cookie:{await db.StringSetAsync(redisKey, cookie)}");
+        }
     }
 
     #endregion
@@ -178,7 +192,7 @@ async Task Notify(string msg, bool isFailed = false)
     Console.WriteLine(msg);
     if (_conf.ScType == "Always" || (isFailed && _conf.ScType == "Failed"))
     {
-        await _scClient.GetAsync($"https://wxpusher.zjiecode.com/api/send/message/?appToken=AT_tOeRjm5Dsld5jzZ8zaw6apciH9DT1Q9b&content={msg}&uid={_conf.ScKey}&url=http%3a%2f%2fwxpusher.zjiecode.com");
+        await _scClient.GetAsync($"https://wxpusher.zjiecode.com/api/send/message/?appToken={_conf.AppToken}&content={msg}&uid={_conf.Uid}&url=http%3a%2f%2fwxpusher.zjiecode.com");
     }
 }
 
@@ -195,6 +209,8 @@ string GetEnvValue(string key) => Environment.GetEnvironmentVariable(key);
 class Conf
 {
     public User[] Users { get; set; }
+    public string AppToken { get; set; }
+    public string Uid { get; set; }
     public string ScKey { get; set; }
     public string ScType { get; set; }
     public string RdsServer { get; set; }
