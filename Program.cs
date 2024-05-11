@@ -39,16 +39,7 @@ for (int i = 0; i < _conf.Users.Length; i++)
     if (isInvalid)
     {
         string redisKey = $"Note163_{user.Username}";
-        if (isRedis)
-        {
-            var redisValue = await db.StringGetAsync(redisKey);
-            if (redisValue.HasValue)
-            {
-                cookie = redisValue.ToString();
-                (isInvalid, result) = await IsInvalid(cookie);
-                Console.WriteLine("redis获取cookie,状态:{0}", isInvalid ? "无效" : "有效");
-            }
-        }
+ 
 
         if (isInvalid)
         {
