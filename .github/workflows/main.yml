@@ -14,7 +14,7 @@ jobs:
     - uses: actions/checkout@main
     - name: Run
       uses: coactions/setup-xvfb@main
-      with:
-        run: dotnet run
       env: 
         CONF: ${{ secrets.CONF }}
+      with:
+        run: dotnet run
