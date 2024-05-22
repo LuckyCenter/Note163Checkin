@@ -192,7 +192,14 @@ async Task Notify(string msg, bool isFailed = false)
     Console.WriteLine(msg);
     if (_conf.ScType == "Always" || (isFailed && _conf.ScType == "Failed"))
     {
-        await _scClient.GetAsync($"https://wxpusher.zjiecode.com/api/send/message/?appToken={_conf.AppToken}&content={msg}&uid={_conf.Uid}&url=http%3a%2f%2fwxpusher.zjiecode.com");
+        try
+        {
+            await _scClient.GetAsync($"https://wxpusher.zjiecode.com/api/send/message/?appToken={_conf.AppToken}&content={msg}&uid={_conf.Uid}&url=http%3a%2f%2fwxpusher.zjiecode.com");
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine($"调用WxPusher接口时出现异常！{ex.Message}. {ex.StackTrace}");
+        }
     }
 }
 
